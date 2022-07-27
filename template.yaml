@@ -1,0 +1,108 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Creates following resources required for TDF api challenge. S3 bucket, IAM policy, Lambda function
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  env:
+    Type: String
+    Description: 'Default env name'
+    Default: 'gb-dev'
+  landingBucketName:
+    Type: String
+    Description: 'Default landing Bucket Name'
+    Default: 'tdf-api-landing-bucket'
+  s3FileNamePrefix:
+    Type: String
+    Description: S3 File name prefix
+    Default: 'hourly_weather'
+  apiToFetch:
+    Type: String
+    Description: API to fetch data from. This API does NOT require authentication
+    Default: 'https://api.open-meteo.com/v1/forecast?latitude=53.3441&longitude=-6.2675&hourly=temperature_2m'
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:  
+
+  # Bucket to store data
+  # No versioning as we are appending data only.
+  LandingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${env}-${landingBucketName}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  #  Permission for lambda to access s3 bucket and write logs to Cloudwatch
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: WriteLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: "*"
+        - PolicyName: WriteToS3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject*
+                Resource: !Sub 'arn:aws:s3:::${LandingBucket}/*'
+
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  # TODO rename this to function
+  ScheduledEvent:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda function that is invoked hourly, that reads from an API and saves contents to a bucket
+      Runtime: nodejs14.x
+      Handler: src/handlers/apiHandler.apiHandler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      # This property associates this Lambda function with a scheduled CloudWatch Event. For all available properties, see
+      # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#schedule
+      # This example runs every hour.
+      Events:
+        CloudWatchEvent:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 * * * ? *) 
+      MemorySize: 128
+      Timeout: 100
+      Environment:
+        Variables:
+          ENV:
+            Ref: env
+          LANDING_BUCKET_BASE_NAME:
+            Ref: landingBucketName
+          S3_FILE_NAME_PREFIX:
+            Ref: s3FileNamePrefix
+          API_TO_FETCH:
+            Ref: apiToFetch
+

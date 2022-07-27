@@ -1,0 +1,25 @@
+{
+    "name": "gb-tdf-api-challenge",
+    "description": "TDF API Challenge",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "axios": "^0.24.0",
+        "axios-retry": "^3.3.1",
+        "lodash": "^4.17.21",
+        "aws-sdk": "^2.1182.0"
+    },
+    "devDependencies": {
+        "jasmine-node": "^1.16.2",
+        "eslint": "^6.7.1",
+        "rewire": "^4.0.0",
+        "chai": "^4.3.6",
+        "sinon": "^4.0.0",
+        "sinon-test": "^2.4.0",
+        "sinon-chai": "^3.7.0",
+        "sinon-stub-promise": "^4.0.0"
+    },
+    "scripts": {
+        "test": "jasmine-node --verbose --captureExceptions --junitreport src/handlers/test/test.spec.js"
+    }
+}

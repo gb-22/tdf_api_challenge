@@ -1,0 +1,24 @@
+{
+  "env": {
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 10,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "comma-dangle": 0,
+    "semi": "error",
+    "indent": ["error", 2],
+    "no-multi-spaces": "off",
+    "max-len": [0],
+    "space-before-function-paren": ["error", {
+      "anonymous": "always",
+      "named": "always",
+      "asyncArrow": "always"
+    }]
+  }
+}
