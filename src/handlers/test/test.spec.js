@@ -17,9 +17,8 @@ let handleAsync = (fn) => {
 };
 
 const apiHandler = rewire('../apiHandler.js');
-// it('Should only return candidates that have emails', test(handleAsync(async () => {
+
 describe('apiHandler function', () => {
-  
   it('Should call functions getHourlyData and writeDataToS3', test(handleAsync(async () => {
     // We don't want to actually call these functions, so stub them
     let getHourlyData = sinon.stub().callsFake(() => {
@@ -42,7 +41,6 @@ describe('apiHandler function', () => {
 
 describe('createS3FileNameAndPath', () => {
   const createS3FileNameAndPath = apiHandler.__get__('createS3FileNameAndPath');
-
   it('Should create correct folder structure based on the current Date', () => {
 
     const {fileName,folderPath, fullFilePath} = createS3FileNameAndPath();
