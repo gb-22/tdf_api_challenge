@@ -5,9 +5,11 @@
 - `aws-sam cli` is installed
 
 ## Overview
-This application deploys infrastructure required to ingest data from an API that provides hourly weather for Galway, Ireland, for the next 7 days, and writes the data to S3.
+This application deploys infrastructure required to ingest data from an API that provides hourly weather, (temperature only)  for Galway, Ireland, for the next 7 days, and writes the data to S3.
 
 API Documentation: https://open-meteo.com/en/docs
+Extra weather variables can be added here: https://open-meteo.com/en/docs
+Timezone is UTC
 
 This API was chosen as it doesn't require authentication - making it easier for anyone to run this application. See below for more information on this
 
